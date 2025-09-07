@@ -1,5 +1,9 @@
 use rusqlite::{params, Connection, Result};
 use std::io;
+use tabled::{
+    Tabled, Table, assert::assert_table,
+    settings::{Style, Alignment, object::Columns},
+};
 
 #[derive(Debug)]
 struct Person {
@@ -45,6 +49,11 @@ fn main() -> Result<()> {
     for person in person_iter {
         println!("{:?}", person?);
     }
+
+    let mut table = Table::new(person_iter);
+    table.with(Style::modern());
+    table.modify(Columns::first(), Alignment::right());
+    assert_table!(table, "");
 
     Ok(())
 }
