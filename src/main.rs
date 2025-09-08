@@ -1,23 +1,26 @@
 use rusqlite::{params, Connection, Result};
 use std::io;
 use tabled::{
-    Tabled, Table, assert::assert_table,
+    Tabled, Table,
     settings::{Style, Alignment, object::Columns},
 };
 
+#[derive(Tabled)]
 #[derive(Debug)]
 struct Person {
     id: i32,
     name: String,
-    data: Option<Vec<u8>>,
+    data: String,
 }
 
 fn main() -> Result<()> {
     let db = std::env::args().nth(1).expect("No db given");
     println!("db: {:?}", db);
     
+    println!("SQL-QUERY:");
     let mut input = String::new();
-//    io::stdin().read_line(&mut input)?;
+    io::stdin().read_line(&mut input).expect("Failed to read Input");
+    println!("SQL-QUERY: {input}");
 
     let connection = Connection::open_in_memory()?;
 
@@ -25,17 +28,14 @@ fn main() -> Result<()> {
         "CREATE TABLE person (
             id   INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
-            data BLOB
+            data TEXT NOT NULL
         )",
         (), // empty list of parameters.
     )?;
 
-    let binary_data = vec![1u8, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1];
-
-    // Correctly insert the BLOB data using a placeholder
     connection.execute(
         "INSERT INTO person (id, name, data) VALUES (?1, ?2, ?3)",
-        params![0, "paul", binary_data],
+        params![0, "paul", "something"],
     )?;    let mut data = connection.prepare("SELECT * FROM person")?;
 
     let person_iter = data.query_map([], |row| {
@@ -50,10 +50,10 @@ fn main() -> Result<()> {
         println!("{:?}", person?);
     }
 
-    let mut table = Table::new(person_iter);
+    let mut table = Table::new(vec![Person{id: 1, name: "adsf".to_string(), data: "adfs".to_string()}]);
     table.with(Style::modern());
     table.modify(Columns::first(), Alignment::right());
-    assert_table!(table, "");
+    println!("{table}");
 
     Ok(())
 }
