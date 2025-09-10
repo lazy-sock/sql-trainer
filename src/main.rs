@@ -1,9 +1,8 @@
-use rusqlite::{params, Connection, Result, Row};
+use rusqlite::{params, Connection, Result};
 use rusqlite::types::{ValueRef};
-use tabled::settings::height::CellHeightIncrease;
 use std::io;
 use tabled::{
-    Tabled, Table,
+    Tabled,
     settings::{Style, Alignment, object::Columns},
     builder::Builder
 };
@@ -82,7 +81,7 @@ fn main() -> Result<()> {
         params![0, "paul", "something"],
     )?;    let mut data = connection.prepare("SELECT * FROM person")?;
 
-    execute_user_select(&connection, "SELECT * FROM person;");
+    execute_user_select(&connection, "SELECT * FROM person;")?;
 
     Ok(())
 }
