@@ -1,8 +1,11 @@
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, Connection, Result, Row};
+use rusqlite::types::{ValueRef};
+use tabled::settings::height::CellHeightIncrease;
 use std::io;
 use tabled::{
     Tabled, Table,
     settings::{Style, Alignment, object::Columns},
+    builder::Builder
 };
 
 #[derive(Tabled)]
@@ -11,6 +14,47 @@ struct Person {
     id: i32,
     name: String,
     data: String,
+}
+
+fn execute_user_select(conn: &Connection, query: &str) -> Result<()> {
+    let mut stmt = conn.prepare(query)?;
+    let col_count = stmt.column_count();
+
+    let col_names: Vec<String> = stmt
+        .column_names()
+        .iter()
+        .map(|s| String::from(*s))
+        .collect::<Vec<_>>();
+
+    let mut rows = stmt.query([])?;
+
+    let mut builder = Builder::default();
+    builder.push_record(col_names.iter().map(|h| h.clone()));
+
+    
+    while let Some(row) = rows.next()? {
+        let mut cells = Vec::new();
+        for i in 0..col_count {
+            let value_ref = row.get_ref(i)?;
+            
+            let display_value = match value_ref {
+                ValueRef::Null => "NULL".to_string(),
+                ValueRef::Integer(i) => i.to_string(),
+                ValueRef::Real(f) => f.to_string(),
+                ValueRef::Text(t) => String::from_utf8_lossy(t).to_string(),
+                ValueRef::Blob(b) => format!("[BLOB, len={}]", b.len()),
+            };
+            cells.push(display_value);
+        }
+        builder.push_record(cells);
+    }
+
+    let mut table = builder.build();
+    table.with(Style::modern());
+    table.modify(Columns::first(), Alignment::right());
+    println!("{table}");
+
+    Ok(())
 }
 
 fn main() -> Result<()> {
@@ -38,22 +82,7 @@ fn main() -> Result<()> {
         params![0, "paul", "something"],
     )?;    let mut data = connection.prepare("SELECT * FROM person")?;
 
-    let person_iter = data.query_map([], |row| {
-        Ok(Person {
-            id: row.get(0)?,
-            name: row.get(1)?,
-            data: row.get(2)?,
-        })
-    })?;
-
-    for person in person_iter {
-        println!("{:?}", person?);
-    }
-
-    let mut table = Table::new(vec![Person{id: 1, name: "adsf".to_string(), data: "adfs".to_string()}]);
-    table.with(Style::modern());
-    table.modify(Columns::first(), Alignment::right());
-    println!("{table}");
+    execute_user_select(&connection, "SELECT * FROM person;");
 
     Ok(())
 }
