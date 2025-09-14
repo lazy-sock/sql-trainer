@@ -6,13 +6,6 @@ fn main() -> Result<()> {
     let db = std::env::args().nth(1).expect("No db given");
     println!("db: {:?}", db);
 
-    println!("SQL-QUERY:");
-    let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Failed to read Input");
-    println!("SQL-QUERY: {input}");
-
     let connection = Connection::open_in_memory()?;
 
     connection.execute(
@@ -29,7 +22,20 @@ fn main() -> Result<()> {
         params![0, "paul", "something"],
     )?;
 
-    execute_user_select(&connection, &input)?;
+    loop {
+        println!("SQL-QUERY:");
+
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read Input");
+
+        if input.trim() == "exit" {
+            break;
+        }
+
+        execute_user_select(&connection, &input)?;
+    }
 
     Ok(())
 }
