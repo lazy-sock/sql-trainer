@@ -29,7 +29,7 @@ fn main() -> Result<()> {
         params![0, "paul", "something"],
     )?;
 
-    execute_user_select(&connection, "SELECT * FROM person;")?;
+    execute_user_select(&connection, &input)?;
 
     Ok(())
 }
