@@ -1,26 +1,18 @@
-use rusqlite::{Connection, Result, params};
-use sql_trainer::execute_user_select;
+use rusqlite::{Connection, Result};
+use sql_trainer::{execute_user_select, file_exists};
 use std::io;
 
 fn main() -> Result<()> {
     let db = std::env::args().nth(1).expect("No db given");
     println!("db: {:?}", db);
 
-    let connection = Connection::open_in_memory()?;
+    let full_path = format!("{}.sqlite", db);
 
-    connection.execute(
-        "CREATE TABLE person (
-            id   INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            data TEXT NOT NULL
-        )",
-        (), // empty list of parameters.
-    )?;
+    if !file_exists(&full_path) {
+        panic!("db file does not exist");
+    }
 
-    connection.execute(
-        "INSERT INTO person (id, name, data) VALUES (?1, ?2, ?3)",
-        params![0, "paul", "something"],
-    )?;
+    let connection = Connection::open(db + ".sqlite")?;
 
     loop {
         println!("SQL-QUERY:");

@@ -1,5 +1,7 @@
 use std::result::Result;
 
+use std::path::Path;
+
 use rusqlite::Connection;
 use rusqlite::types::ValueRef;
 
@@ -7,6 +9,12 @@ use tabled::{
     builder::Builder,
     settings::{Alignment, Style, object::Columns},
 };
+
+pub fn file_exists(filename: &str) -> bool {
+    let path = Path::new(filename);
+
+    path.exists()
+}
 
 pub fn execute_user_select(conn: &Connection, query: &str) -> Result<(), rusqlite::Error> {
     let mut stmt = conn.prepare(query)?;
