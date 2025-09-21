@@ -2,6 +2,7 @@ use clap::Parser;
 use rusqlite::{Connection, Result};
 use sql_trainer::{execute_user_select, file_exists};
 use std::io;
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(name = "sql-trainer")]
@@ -10,6 +11,9 @@ struct Cli {
     #[arg(long = "create_db", value_name = "DB_NAME")]
     create_db: Option<String>,
 
+    #[arg(long = "insert_file", value_name = "FILE", requires = "create_db")]
+    insert_file: Option<PathBuf>,
+
     #[arg(short, long, value_name = "DB", required_unless_present = "create_db")]
     db: Option<String>,
 }
@@ -17,13 +21,26 @@ struct Cli {
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    if let Some(dbname) = cli.create_db {
+    if let Some(dbname) = &cli.create_db {
+        let insert_path = cli
+            .insert_file
+            .as_ref()
+            .expect("insert_file required with create_db");
         let full_path = format!("{}.sqlite", dbname);
         if file_exists(&full_path) {
             panic!("db file already exists");
         }
 
+        let conn = Connection::open(&full_path)?;
         println!("Created database at {}", full_path);
+
+        let sql_text = std::fs::read_to_string(insert_path).expect("Failed to read insert file");
+
+        conn.execute_batch(&sql_text)
+            .expect("Failed to execute insert queries");
+
+        println!("Inserted from file {}", insert_path.display());
+
         return Ok(());
     }
 
