@@ -55,3 +55,16 @@ pub fn execute_user_select(conn: &Connection, query: &str) -> Result<(), rusqlit
 
     Ok(())
 }
+
+pub fn create_sqlite_file(
+    filename: &str,
+    sql_statements: &[&str],
+) -> Result<(), Box<dyn std::error::Error>> {
+    let conn = Connection::open(filename)?;
+
+    for i in sql_statements {
+        conn.execute(i, [])?;
+    }
+
+    Ok(())
+}
