@@ -1,6 +1,6 @@
 use clap::Parser;
 use rusqlite::{Connection, Result};
-use sql_trainer::{execute_user_select, file_exists};
+use sql_trainer::{ask_sql_question, execute_user_select, file_exists};
 use std::io;
 use std::path::PathBuf;
 
@@ -96,6 +96,14 @@ async fn main() -> Result<()> {
 
         if input.trim() == "exit" {
             break;
+        }
+
+        if input.starts_with("help") {
+            let output = ask_sql_question(&input)
+                .await
+                .expect("Error occured while retrieving ollama output");
+            println!("Ollama Response: {output}");
+            continue;
         }
 
         execute_user_select(&connection, &input)?;

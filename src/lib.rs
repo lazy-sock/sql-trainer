@@ -10,9 +10,9 @@ use tabled::{
     settings::{Alignment, Style, object::Columns},
 };
 
-use ollama_rs::Ollama;
 use ollama_rs::generation::chat::ChatMessage;
 use ollama_rs::generation::chat::request::ChatMessageRequest;
+use ollama_rs::{Ollama, error::OllamaError};
 
 use regex::Regex;
 
@@ -111,4 +111,12 @@ pub async fn generate_db(
         .expect("Failed to execute insert queries");
 
     Ok(())
+}
+
+pub async fn ask_sql_question(message: &str) -> Result<String, OllamaError> {
+    let prompt = String::from(
+        "Please answer the following question as an sql-expert in sqlite. Be concise, short and only mention relevant things. Message: ",
+    ) + message;
+    let output = send_message_to_ollama(&prompt).await?;
+    Ok(format_output(&output))
 }
