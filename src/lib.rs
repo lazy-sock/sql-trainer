@@ -10,6 +10,12 @@ use tabled::{
     settings::{Alignment, Style, object::Columns},
 };
 
+use ollama_rs::Ollama;
+use ollama_rs::generation::chat::ChatMessage;
+use ollama_rs::generation::chat::request::ChatMessageRequest;
+
+use regex::Regex;
+
 pub fn file_exists(filename: &str) -> bool {
     let path = Path::new(filename);
 
@@ -65,6 +71,44 @@ pub fn create_sqlite_file(
     for i in sql_statements {
         conn.execute(i, [])?;
     }
+
+    Ok(())
+}
+
+async fn send_message_to_ollama(message: &str) -> Result<String, ollama_rs::error::OllamaError> {
+    let mut ollama = Ollama::default();
+    let model = "qwen3:latest".to_string();
+    let mut history = vec![];
+
+    let res = ollama
+        .send_chat_messages_with_history(
+            &mut history,
+            ChatMessageRequest::new(model, vec![ChatMessage::user(String::from(message))]),
+        )
+        .await;
+
+    Ok(res.unwrap().message.content)
+}
+
+fn format_output(output: &str) -> String {
+    let re = Regex::new(r"(?s)<think>.*?</think>").unwrap();
+    re.replace_all(output, "").to_string()
+}
+
+pub async fn generate_db(
+    topic: &str,
+    conn: &Connection,
+) -> Result<(), ollama_rs::error::OllamaError> {
+    let prompt = format!(
+        "Create sql instructions for a sqlite database about {topic}. Please ONLY output sql Instructions. Nothing else. The output gets directly converted into a .sqlite file. Be creative with the topic and create sample data, not just tables. Make sure the syntax is correct and safe and do not use strings in actual data, as this causes parsing problems."
+    );
+    let mut message = send_message_to_ollama(&prompt).await?;
+    message = format_output(&message).to_string();
+
+    println!("{:?}", message);
+
+    conn.execute_batch(&message)
+        .expect("Failed to execute insert queries");
 
     Ok(())
 }

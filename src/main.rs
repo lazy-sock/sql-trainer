@@ -11,14 +11,26 @@ struct Cli {
     #[arg(long = "create_db", value_name = "DB_NAME")]
     create_db: Option<String>,
 
+    #[arg(long = "create_db_ai", value_name = "DB_NAME")]
+    create_db_ai: Option<String>,
+
+    #[arg(long = "topic", value_name = "PROMPT")]
+    topic: Option<String>,
+
     #[arg(long = "insert_file", value_name = "FILE", requires = "create_db")]
     insert_file: Option<PathBuf>,
 
-    #[arg(short, long, value_name = "DB", required_unless_present = "create_db")]
+    #[arg(
+        short,
+        long,
+        value_name = "DB",
+        required_unless_present_any = ["create_db", "create_db_ai"],
+    )]
     db: Option<String>,
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     if let Some(dbname) = &cli.create_db {
@@ -40,6 +52,24 @@ fn main() -> Result<()> {
             .expect("Failed to execute insert queries");
 
         println!("Inserted from file {}", insert_path.display());
+
+        return Ok(());
+    }
+
+    if let Some(dbname) = &cli.create_db_ai {
+        let full_path = format!("{}.sqlite", dbname);
+        if file_exists(&full_path) {
+            panic!("db file already exists");
+        }
+
+        let conn = Connection::open(&full_path)?;
+        println!("Created database at {}", full_path);
+
+        let topic = cli.topic.expect("Error retrieving topic from arguments");
+
+        sql_trainer::generate_db(&topic, &conn)
+            .await
+            .expect("Could not generate db");
 
         return Ok(());
     }
