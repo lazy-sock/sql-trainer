@@ -1,3 +1,4 @@
+use ansi_term::Color::Green;
 use clap::Parser;
 use rusqlite::{Connection, Result};
 use sql_trainer::{ask_sql_question, execute_user_select, file_exists};
@@ -87,7 +88,7 @@ async fn main() -> Result<()> {
     let connection = Connection::open(db_name + ".sqlite")?;
 
     loop {
-        println!("SQL-QUERY:");
+        println!("-----");
 
         let mut input = String::new();
         io::stdin()
@@ -102,7 +103,7 @@ async fn main() -> Result<()> {
             let output = ask_sql_question(&input)
                 .await
                 .expect("Error occured while retrieving ollama output");
-            println!("Ollama Response: {output}");
+            println!("Ollama Response: {}", Green.paint(output));
             continue;
         }
 
