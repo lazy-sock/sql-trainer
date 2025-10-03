@@ -5,7 +5,7 @@ First install ollama and the model `qwen3:latest`. Then serve the AI with `ollam
 
 After that you can run the following command with a topic you want. Keep in mind that the topic cannot contain spaces.
 
-`cargo run -- --create_db_ai --topic github`
+`cargo run -- --create_db_ai db_name --topic github`
 
 ## Usage
 `cargo run -- --db github`
