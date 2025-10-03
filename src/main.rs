@@ -100,6 +100,7 @@ async fn main() -> Result<()> {
         }
 
         if input.starts_with("help") {
+            println!("Thinking...");
             let output = ask_sql_question(&input)
                 .await
                 .expect("Error occured while retrieving ollama output");
