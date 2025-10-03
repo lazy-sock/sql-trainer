@@ -10,4 +10,4 @@ After that you can run the following command with a topic you want. Keep in mind
 ## Usage
 `cargo run -- --db github`
 
-Then just run your SQL Queries! You can exit the program with `exit` and ask AI for help with `help <question>` (you have to host it yourself with `ollama serve`).
+Then just run your SQL Select Queries! You can exit the program with `exit` and ask AI for help with `help <question>` (you have to host it yourself with `ollama serve`).
