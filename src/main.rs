@@ -2,6 +2,7 @@ use ansi_term::Color::Green;
 use clap::Parser;
 use rusqlite::{Connection, Result};
 use sql_trainer::{ask_sql_question, execute_user_select, file_exists};
+use std::fs::remove_file;
 use std::io;
 use std::path::PathBuf;
 
@@ -49,8 +50,18 @@ async fn main() -> Result<()> {
 
         let sql_text = std::fs::read_to_string(insert_path).expect("Failed to read insert file");
 
-        conn.execute_batch(&sql_text)
-            .expect("Failed to execute insert queries");
+        match conn.execute_batch(&sql_text) {
+            Ok(()) => {
+                println!("Insert queries executed successfully");
+            }
+            Err(e) => {
+                eprintln!("Failed to execute insert queries: {}", e);
+                remove_file(&full_path).expect(&format!(
+                    "Cleanup Error: Failed to remove file {}",
+                    &full_path
+                ));
+            }
+        }
 
         println!("Inserted from file {}", insert_path.display());
 
@@ -68,9 +79,22 @@ async fn main() -> Result<()> {
 
         let topic = cli.topic.expect("Error retrieving topic from arguments");
 
-        sql_trainer::generate_db(&topic, &conn)
-            .await
-            .expect("Could not generate db");
+        //sql_trainer::generate_db(&topic, &conn)
+        //    .await
+        //    .expect("Could not generate db");
+
+        match sql_trainer::generate_db(&topic, &conn).await {
+            Ok(()) => {
+                println!("Insert queries executed successfully");
+            }
+            Err(e) => {
+                eprintln!("Falied to execute insert queries: {}", e);
+                remove_file(&full_path).expect(&format!(
+                    "Cleanup Error: Failed to remove file {}",
+                    &full_path
+                ))
+            }
+        }
 
         return Ok(());
     }

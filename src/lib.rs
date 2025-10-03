@@ -110,8 +110,6 @@ pub async fn generate_db(
     conn.execute_batch(&message)
         .expect("Failed to execute insert queries");
 
-    //TODO: remove file when executing the insert queries fails
-
     Ok(())
 }
 
