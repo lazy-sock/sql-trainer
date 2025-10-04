@@ -1,5 +1,10 @@
 A CLI for learning SQL in a playground environment. Uses AI to generate Databases.
 
+## Installation
+You need to have Rust and Cargo installed.
+
+```cargo install sql-trainer```
+
 ## Generate new Database
 First install ollama and the model `qwen3:latest`. Then serve the AI with `ollama serve`.
 
