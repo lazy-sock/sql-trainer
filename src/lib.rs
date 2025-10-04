@@ -100,7 +100,7 @@ pub async fn generate_db(
     conn: &Connection,
 ) -> Result<(), ollama_rs::error::OllamaError> {
     let prompt = format!(
-        "Create sql instructions for a sqlite database about {topic}. Please ONLY output sql Instructions. Nothing else. The output gets directly converted into a .sqlite file. Be creative with the topic and create sample data, not just tables. Make sure the syntax is correct and safe and do not use strings in actual data, as this causes parsing problems."
+        "Create sql instructions for a sqlite database about {topic}. Please ONLY output sql Instructions. Nothing else. The output gets directly converted into a .sqlite file. Be creative with the topic and create sample data, not just tables. Also be sure to create more lots of diverse entries in the tables so they aren't that empty, but dont repeat yourself. Make sure the syntax is correct and safe and do not use strings in actual data, as this causes parsing problems."
     );
     let mut message = send_message_to_ollama(&prompt).await?;
     message = format_output(&message).to_string();
