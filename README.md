@@ -10,9 +10,9 @@ First install ollama and the model `qwen3:latest`. Then serve the AI with `ollam
 
 After that you can run the following command with a topic you want. Keep in mind that the topic cannot contain spaces.
 
-`cargo run -- --create_db_ai db_name --topic github`
+`sql-trainer --create_db_ai db_name --topic github`
 
 ## Usage
-`cargo run -- --db github`
+`sql-trainer --db github`
 
 Then just run your SQL Select Queries! You can exit the program with `exit` and ask AI for help with `help <question>` (you have to host it yourself with `ollama serve`).
