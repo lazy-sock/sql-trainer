@@ -1,4 +1,4 @@
-use ansi_term::Color::Green;
+use ansi_term::Color::{Green, Red};
 use clap::Parser;
 use rusqlite::{Connection, Result};
 use sql_trainer::{ask_sql_question, execute_user_select, file_exists};
@@ -132,7 +132,12 @@ async fn main() -> Result<()> {
             continue;
         }
 
-        execute_user_select(&connection, &input)?;
+        match execute_user_select(&connection, &input) {
+            Ok(_) => {}
+            Err(e) => {
+                eprintln!("{} {}", Red.paint("Error:"), e)
+            }
+        };
     }
 
     Ok(())
